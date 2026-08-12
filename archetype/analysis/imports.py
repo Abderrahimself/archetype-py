@@ -194,7 +194,10 @@ def build_import_graph(
 
         graph.add_node(current_module)
 
-        source = file_path.read_text(encoding="utf-8")
+        # Parse from bytes so CPython applies its own BOM handling and PEP 263
+        # encoding detection. Decoding as utf-8 here would reject valid sources
+        # that carry a BOM or declare a different encoding.
+        source = file_path.read_bytes()
         tree = ast.parse(source, filename=str(file_path))
 
         for node in ast.walk(tree):
