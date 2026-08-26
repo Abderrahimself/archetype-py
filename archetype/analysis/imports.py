@@ -9,6 +9,7 @@ from typing import Iterable
 
 import networkx as nx
 
+from archetype.analysis.ast_utils import read_source
 from archetype.analysis.path_filters import is_path_excluded, normalize_exclude_patterns
 
 _IGNORED_DIRS = {
@@ -194,11 +195,7 @@ def build_import_graph(
 
         graph.add_node(current_module)
 
-        # Parse from bytes so CPython applies its own BOM handling and PEP 263
-        # encoding detection. Decoding as utf-8 here would reject valid sources
-        # that carry a BOM or declare a different encoding.
-        source = file_path.read_bytes()
-        tree = ast.parse(source, filename=str(file_path))
+        tree = ast.parse(read_source(file_path), filename=str(file_path))
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
